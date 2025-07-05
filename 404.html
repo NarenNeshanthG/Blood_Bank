@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}404 Not Found{% endblock %}
+
+{% block content %}
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1>Page Not Found</h1>
+        <p class="lead">Oops! The page you are looking for doesn't seem to exist or may have been moved.</p>
+        <p>Please check the URL or return to the homepage.</p>
+        <a href="{{ url_for('index') }}" class="btn primary" style="margin-top: 1rem;">Return to Home</a>
+    </div>
+{% endblock %}

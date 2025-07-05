@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Donor Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .eligible {
+            color: green;
+            font-weight: bold;
+        }
+        .ineligible {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Donor Records</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Blood Type</th>
+                <th>Gender</th>
+                <th>Eligibility</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in donor_records %}
+            <tr>
+                <td>{{ record.get('timestamp', 'N/A') }}</td>
+                <td>{{ record.get('Name', 'N/A') }}</td>
+                <td>{{ record.get('Age', 'N/A') }}</td>
+                <td>{{ record.get('Blood Type', 'N/A') }}</td>
+                <td>{{ record.get('Gender', 'N/A') }}</td>
+                <td class="{{ 'eligible' if record.get('Eligibility', False) else 'ineligible' }}">
+                    {{ 'Eligible' if record.get('Eligibility', False) else 'Ineligible' }}
+                </td>
+                <td>
+                    <a href="{{ url_for('donor_details', donor_details=record) }}">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('index') }}">Back to Donor Form</a>
+    </div>
+</body>
+</html>

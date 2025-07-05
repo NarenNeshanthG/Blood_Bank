@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Eligibility Result - {{ donor.name }}{% endblock %}
+
+{% block content %}
+    <h2>Eligibility Prediction Result</h2>
+
+    {% if donor %}
+    <div class="donor-details">
+        <h3>Donor Information</h3>
+        <p><strong>ID:</strong> {{ donor.id }}</p>
+        <p><strong>Name:</strong> {{ donor.name }}</p>
+        <p><strong>Age:</strong> {{ donor.age }}</p>
+        <p><strong>Gender:</strong> {{ donor.gender | replace('M', 'Male') | replace('F', 'Female') | replace('O', 'Other') }}</p>
+        <p><strong>Blood Type:</strong> {{ donor.blood_type }}</p>
+        <p><strong>Weight:</strong> {{ donor.weight | default('N/A') }} kg</p>
+        <p><strong>Hemoglobin:</strong> {{ donor.hemoglobin_level | default('N/A') }} g/dL</p>
+        <p><strong>Last Donated:</strong> {{ donor.last_donated | default('Never') }}</p>
+        <p><strong>Alcohol Status:</strong> {{ donor.alcoholic_status | default('N/A') }}</p>
+        <p><strong>Recent Travel:</strong> {{ 'Yes' if donor.travelled_recently == 1 else 'No' }}</p>
+        <p><strong>Recent Illness:</strong> {{ 'Yes' if donor.had_recent_illness == 1 else 'No' }}</p>
+        <p><strong>Recent Tattoo/Piercing:</strong> {{ 'Yes' if donor.recent_tattoo_piercing == 1 else 'No' }}</p>
+        {% if donor.gender == 'F' %}
+        <p><strong>Pregnant/Breastfeeding:</strong> {{ 'Yes' if donor.is_pregnant_breastfeeding == 1 else 'No' }}</p>
+        {% endif %}
+        {# Add other fields like conditions/meds if desired #}
+        {# <p><strong>Conditions:</strong> {{ donor.medical_conditions | default('None') }}</p> #}
+    </div>
+
+    {# Display the result using the message and details from the prediction #}
+    <div class="result-box {{ 'eligible' if is_eligible else 'not-eligible' }}">
+        <h2>
+            Prediction: {{ message }}
+            {% if details and details.confidence_percent %}
+                 <span class="confidence">Confidence: {{ details.confidence_percent }}</span>
+            {% endif %}
+        </h2>
+
+        {% if is_eligible %}
+            <p>Based on the provided information and the AI model, this donor is likely eligible to donate.</p>
+            <p><strong>Next Steps:</strong> Standard pre-donation screening (health questionnaire, vital signs, hemoglobin check) is still required at the donation center.</p>
+        {% else %}
+            <p>Based on the provided information and the AI model, this donor might be deferred from donating at this time.</p>
+            {% if factors %}
+            <div class="factors">
+                <p><strong>Potential Factors Contributing to Ineligibility (based on model & common rules):</strong></p>
+                <ul>
+                    {% for factor in factors %}
+                    <li>{{ factor }}</li>
+                    {% endfor %}
+                     <li><em>Note: The AI model considers complex interactions. These are potential reasons. Final eligibility is determined at the donation center.</em></li>
+                </ul>
+            </div>
+            {% else %}
+            <p>The specific reasons might be complex interactions learned by the model or missing critical data. Further screening is essential.</p>
+            {% endif %}
+        {% endif %}
+
+    </div>
+
+    <div class="actions">
+         <a href="{{ url_for('list_donors') }}" class="btn secondary">Back to Donors List</a>
+         {# Maybe add link to edit donor info? #}
+         {# <a href="{{ url_for('edit_donor', donor_id=donor.id) }}" class="btn secondary small">Edit Donor Info</a> #}
+    </div>
+
+    {% else %}
+        <p class="error">Donor information could not be loaded.</p>
+    {% endif %}
+
+{% endblock %}

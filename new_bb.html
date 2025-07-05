@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Blood Donor Locator - Chennai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-red-600 mb-6">
+            Chennai Blood Donor Network
+        </h1>
+
+        <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">
+                    Select Blood Type
+                </label>
+                <select id="bloodTypeSelect" class="w-full p-2 border rounded">
+                    <option value="">Choose Blood Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+            </div>
+
+            <div id="donorList">
+                <!-- Donors will be dynamically added here -->
+            </div>
+        </div>
+
+        <div class="max-w-2xl mx-auto mt-4 bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-red-600 mb-4">Add New Donor</h2>
+            <form id="addDonorForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Name</label>
+                    <input type="text" id="donorName" required class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Blood Type</label>
+                    <select id="donorBloodType" required class="w-full p-2 border rounded">
+                        <option value="">Select Blood Type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" id="donorPhone" required class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Area</label>
+                    <input type="text" id="donorArea" required class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Occupation</label>
+                    <input type="text" id="donorOccupation" required class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Age</label>
+                    <input type="number" id="donorAge" required min="18" max="65" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Last Donation</label>
+                    <input type="text" id="donorLastDonation" placeholder="e.g., 3 months ago" required class="w-full p-2 border rounded">
+                </div>
+                <button type="submit" class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600">
+                    Add Donor
+                </button>
+            </form>
+        </div>
+
+        <div id="aiAssistantSection" class="max-w-2xl mx-auto mt-4 bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-red-600 mb-4">AI Blood Donor Assistant</h2>
+            <div id="aiChatBox" class="border rounded p-4 mb-4 h-64 overflow-y-auto bg-gray-50">
+                <!-- AI chat messages will appear here -->
+            </div>
+            <div class="flex">
+                <input type="text" id="aiChatInput" placeholder="Ask about blood donation..." class="flex-grow p-2 border rounded-l">
+                <button id="aiChatSend" class="bg-red-500 text-white px-4 py-2 rounded-r hover:bg-red-600">Send</button>
+            </div>
+        </div>
+
+        <div class="max-w-2xl mx-auto mt-4 text-center text-gray-600">
+            <p>Serving Chennai and surrounding areas in Tamil Nadu</p>
+            <p class="text-sm mt-2">Note: All donors are volunteers. Please respect their privacy.</p>
+        </div>
+    </div>
+
+    <script>
+        // Blood type compatibility matrix
+        var bloodTypeCompatibility = {};
+        bloodTypeCompatibility["A+"] = ["A+", "AB+"];
+        bloodTypeCompatibility["A-"] = ["A+", "A-", "AB+", "AB-"];
+        bloodTypeCompatibility["B+"] = ["B+", "AB+"];
+        bloodTypeCompatibility["B-"] = ["B+", "B-", "AB+", "AB-"];
+        bloodTypeCompatibility["AB+"] = ["AB+"];
+        bloodTypeCompatibility["AB-"] = ["AB+", "AB-"];
+        bloodTypeCompatibility["O+"] = ["A+", "B+", "AB+", "O+"];
+        bloodTypeCompatibility["O-"] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+        // Initialize localForage for persistent storage
+        localforage.config({
+            driver: localforage.LOCALSTORAGE,
+            name: 'BloodDonorNetwork'
+        });
+
+        // Realistic donor data for Chennai areas
+        var donors = [
+            {
+                name: "Rajesh Kumar Naidu",
+                bloodType: "O+",
+                phone: "9445678901",
+                area: "Mylapore",
+                occupation: "Software Engineer",
+                age: 29,
+                lastDonation: "3 months ago"
+            },
+            {
+                name: "Priya Shankar",
+                bloodType: "A-",
+                phone: "8678901234",
+                area: "Anna Nagar",
+                occupation: "Teacher",
+                age: 35,
+                lastDonation: "6 months ago"
+            },
+            // ... (previous donors remain the same)
+        ];
+
+        // Load donors from local storage
+        async function loadDonors() {
+            try {
+                const storedDonors = await localforage.getItem('donors');
+                if (storedDonors) {
+                    donors = storedDonors;
+                }
+            } catch (error) {
+                console.error('Error loading donors:', error);
+            }
+        }
+
+        // Save donors to local storage
+        async function saveDonors() {
+            try {
+                await localforage.setItem('donors', donors);
+            } catch (error) {
+                console.error('Error saving donors:', error);
+            }
+        }
+
+        // Get DOM elements
+        var bloodTypeSelect = document.getElementById("bloodTypeSelect");
+        var donorList = document.getElementById("donorList");
+        var addDonorForm = document.getElementById("addDonorForm");
+        var aiChatBox = document.getElementById("aiChatBox");
+        var aiChatInput = document.getElementById("aiChatInput");
+        var aiChatSend = document.getElementById("aiChatSend");
+
+        // Add donor form submission
+        addDonorForm.onsubmit = async function(event) {
+            event.preventDefault();
+
+            // Collect form data
+            const newDonor = {
+                name: document.getElementById("donorName").value,
+                bloodType: document.getElementById("donorBloodType").value,
+                phone: document.getElementById("donorPhone").value,
+                area: document.getElementById("donorArea").value,
+                occupation: document.getElementById("donorOccupation").value,
+                age: parseInt(document.getElementById("donorAge").value),
+                lastDonation: document.getElementById("donorLastDonation").value
+            };
+
+            // Add donor to the list
+            donors.push(newDonor);
+
+            // Save donors to local storage
+            await saveDonors();
+
+            // Reset form
+            addDonorForm.reset();
+
+            // Show confirmation
+            alert("Donor added successfully!");
+
+            // Trigger blood type selection if a type was previously selected
+            if (bloodTypeSelect.value) {
+                bloodTypeSelect.dispatchEvent(new Event('change'));
+            }
+        };
+
+        // Simulated AI Chat Assistant
+        const aiResponses = {
+            "how to donate blood": "To donate blood, you should: 1) Be between 18-65 years old, 2) Weigh at least 50 kg, 3) Be in good health, 4) Eat a healthy meal before donation, 5) Stay hydrated.",
+            "blood donation frequency": "You can donate whole blood every 3 months (56 days). Plasma donors can donate more frequently, about every 7-14 days.",
+            "who can donate": "Generally, anyone between 18-65 years old who is in good health can donate. However, certain conditions may temporarily or permanently disqualify you.",
+            "benefits of donation": "Blood donation helps save lives, provides free health screening, burns calories, reduces risk of heart disease, and helps in maintaining healthy iron levels.",
+            "default": "I can help you with questions about blood donation. Ask me about donation process, eligibility, or benefits."
+        };
+
+        // AI Chat functionality
+        aiChatSend.onclick = function() {
+            const userMessage = aiChatInput.value.trim().toLowerCase();
+            
+            if (!userMessage) return;
+
+            // Display user message
+            const userMessageEl = document.createElement('div');
+            userMessageEl.className = 'text-right mb-2';
+            userMessageEl.innerHTML = `<span class="bg-blue-100 p-2 rounded inline-block">${aiChatInput.value}</span>`;
+            aiChatBox.appendChild(userMessageEl);
+
+            // Find appropriate AI response
+            const response = Object.keys(aiResponses).find(key => 
+                userMessage.includes(key)
+            ) || "default";
+
+            // Display AI response
+            const aiResponseEl = document.createElement('div');
+            aiResponseEl.className = 'text-left mb-2';
+            aiResponseEl.innerHTML = `<span class="bg-red-100 p-2 rounded inline-block">${aiResponses[response]}</span>`;
+            aiChatBox.appendChild(aiResponseEl);
+
+            // Clear input and scroll to bottom
+            aiChatInput.value = '';
+            aiChatBox.scrollTop = aiChatBox.scrollHeight;
+        };
+
+        // Allow sending message with Enter key
+        aiChatInput.onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                aiChatSend.click();
+            }
+        };
+
+        // Existing blood type selection logic
+        bloodTypeSelect.onchange = function() {
+            // Clear previous results
+            donorList.innerHTML = "";
+
+            // Get selected blood type
+            var selectedBloodType = this.value;
+
+            // If no blood type selected, exit
+            if (!selectedBloodType) {
+                return;
+            }
+
+            // Find compatible donors
+            var compatibleDonors = [];
+            for (var i = 0; i < donors.length; i++) {
+                var donor = donors[i];
+                var compatibleTypes = bloodTypeCompatibility[selectedBloodType];
+                
+                for (var j = 0; j < compatibleTypes.length; j++) {
+                    if (donor.bloodType === compatibleTypes[j]) {
+                        compatibleDonors.push(donor);
+                        break;
+                    }
+                }
+            }
+
+            // Display compatible donors
+            if (compatibleDonors.length === 0) {
+                donorList.innerHTML = "<p class='text-red-500'>No compatible donors found in Chennai.</p>";
+            } else {
+                for (var k = 0; k < compatibleDonors.length; k++) {
+                    var donor = compatibleDonors[k];
+                    var donorElement = document.createElement("div");
+                    donorElement.className = "border p-4 mb-2 rounded bg-red-50";
+                    
+                    var donorHTML = 
+                        "<strong class='text-lg text-red-700'>" + donor.name + "</strong>" +
+                        "<p>Blood Type: <span class='font-semibold'>" + donor.bloodType + "</span></p>" +
+                        "<p>Occupation: " + donor.occupation + "</p>" +
+                        "<p>Age: " + donor.age + " years</p>" +
+                        "<p>Area: " + donor.area + ", Chennai</p>" +
+                        "<p>Last Donation: " + donor.lastDonation + "</p>" +
+                        "<a href='tel:" + donor.phone + "' class='inline-block mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600'>Call Donor</a>";
+                    
+                    donorElement.innerHTML = donorHTML;
+                    donorList.appendChild(donorElement);
+                }
+            }
+        };
+
+        // Load donors on page load
+        loadDonors();
+    </script>
+</body>
+</html>

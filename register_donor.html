@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Register New Donor - Blood Donation System{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <h2>Register New Donor</h2>
+    <p>Please fill out the form accurately. All information helps ensure the safety of blood donations. Fields marked with * are required.</p>
+
+    {# Use form_data passed back on validation error to repopulate #}
+    {% set data = form_data or {} %}
+
+    <form action="{{ url_for('register_donor') }}" method="post">
+
+        <fieldset>
+            <legend>Basic Information</legend>
+            <div class="form-group">
+                <label for="name">Full Name*</label>
+                <input type="text" id="name" name="name" value="{{ data.get('name', '') }}" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age* (years)</label>
+                    <input type="number" id="age" name="age" min="16" max="100" value="{{ data.get('age', '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender*</label>
+                    <select id="gender" name="gender" required>
+                        <option value="" {% if not data.get('gender') %}selected{% endif %} disabled>Select...</option>
+                        <option value="M" {% if data.get('gender') == 'M' %}selected{% endif %}>Male</option>
+                        <option value="F" {% if data.get('gender') == 'F' %}selected{% endif %}>Female</option>
+                        <option value="O" {% if data.get('gender') == 'O' %}selected{% endif %}>Other/Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                 <div class="form-group">
+                    <label for="blood_type">Blood Type*</label>
+                    <select id="blood_type" name="blood_type" required>
+                        <option value="" {% if not data.get('blood_type') %}selected{% endif %} disabled>Select...</option>
+                        {% set btypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'] %}
+                        {% for bt in btypes %}
+                        <option value="{{ bt }}" {% if data.get('blood_type') == bt %}selected{% endif %}>{{ bt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label> {# Optional but important #}
+                    <input type="number" id="weight" name="weight" min="30" max="250" step="0.1" value="{{ data.get('weight', '') }}" placeholder="e.g., 65.5">
+                     <small class="text-muted">Minimum weight is typically 50kg.</small>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Health & Donation History</legend>
+             <div class="form-row">
+                <div class="form-group">
+                    <label for="hemoglobin_level">Hemoglobin Level (g/dL)</label> {# Optional, often tested pre-donation #}
+                    <input type="number" id="hemoglobin_level" name="hemoglobin_level" min="5" max="25" step="0.1" value="{{ data.get('hemoglobin_level', '') }}" placeholder="e.g., 14.0">
+                </div>
+                <div class="form-group">
+                    <label for="blood_pressure">Blood Pressure (optional)</label>
+                    <input type="text" id="blood_pressure" name="blood_pressure" pattern="\d{2,3}/\d{2,3}" value="{{ data.get('blood_pressure', '') }}" placeholder="e.g., 120/80">
+                    <small class="text-muted">Format: Systolic/Diastolic</small>
+                </div>
+            </div>
+             <div class="form-group">
+                <label for="last_donated">Date of Last Donation (if any)</label>
+                <input type="date" id="last_donated" name="last_donated" value="{{ data.get('last_donated', '') }}" max="{{ now.strftime('%Y-%m-%d') }}"> {# Prevent future dates #}
+                 <small class="text-muted">Leave blank if never donated.</small>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Lifestyle & Recent Events</legend>
+            <div class="form-group">
+                <label for="alcoholic_status">Alcohol Consumption*</label>
+                <select id="alcoholic_status" name="alcoholic_status" required>
+                    <option value="" {% if not data.get('alcoholic_status') %}selected{% endif %} disabled>Select frequency...</option>
+                    <option value="Never" {% if data.get('alcoholic_status') == 'Never' %}selected{% endif %}>Never</option>
+                    <option value="Occasional" {% if data.get('alcoholic_status') == 'Occasional' %}selected{% endif %}>Occasional (Socially/Rarely)</option>
+                    <option value="Regular" {% if data.get('alcoholic_status') == 'Regular' %}selected{% endif %}>Regular (Weekly/Daily)</option>
+                    <option value="Recovering" {% if data.get('alcoholic_status') == 'Recovering' %}selected{% endif %}>Recovering/Past heavy use</option>
+                    <option value="Unknown" {% if data.get('alcoholic_status') == 'Unknown' %}selected{% endif %}>Prefer not to say</option>
+                </select>
+                 <small class="text-muted">Honest answers are important for safety.</small>
+            </div>
+
+            <div class="form-group radio-group">
+                <label>Travelled outside the country in the last 12 months?</label>
+                <label><input type="radio" name="travelled_recently" value="yes" {% if data.get('travelled_recently') == 'yes' or data.get('travelled_recently') == 1 %}checked{% endif %}> Yes</label>
+                <label><input type="radio" name="travelled_recently" value="no" {% if data.get('travelled_recently') == 'no' or data.get('travelled_recently') == 0 %}checked{% endif %}> No</label>
+            </div>
+            {# Simple conditional display placeholder - could enhance with JS #}
+            <div class="form-group conditional-details" id="travel-details-group">
+                <label for="travel_details">If yes, please list countries and dates:</label>
+                <textarea id="travel_details" name="travel_details" rows="2">{{ data.get('travel_details', '') }}</textarea>
+            </div>
+
+            <div class="form-group radio-group">
+                <label>Had any significant illness or fever in the last month?</label>
+                <label><input type="radio" name="had_recent_illness" value="yes" {% if data.get('had_recent_illness') == 'yes' or data.get('had_recent_illness') == 1 %}checked{% endif %}> Yes</label>
+                <label><input type="radio" name="had_recent_illness" value="no" {% if data.get('had_recent_illness') == 'no' or data.get('had_recent_illness') == 0 %}checked{% endif %}> No</label>
+            </div>
+            <div class="form-group conditional-details" id="illness-details-group">
+                <label for="illness_details">If yes, please provide brief details:</label>
+                <textarea id="illness_details" name="illness_details" rows="2">{{ data.get('illness_details', '') }}</textarea>
+            </div>
+
+             <div class="form-group radio-group">
+                <label>Received a tattoo or piercing in the last 3-6 months?</label>
+                <label><input type="radio" name="recent_tattoo_piercing" value="yes" {% if data.get('recent_tattoo_piercing') == 'yes' or data.get('recent_tattoo_piercing') == 1 %}checked{% endif %}> Yes</label>
+                <label><input type="radio" name="recent_tattoo_piercing" value="no" {% if data.get('recent_tattoo_piercing') == 'no' or data.get('recent_tattoo_piercing') == 0 %}checked{% endif %}> No</label>
+                 <small class="text-muted">(Timeframe may vary by location)</small>
+            </div>
+
+            {# Conditionally show pregnancy question based on gender? Could use JS #}
+            <div class="form-group radio-group" id="pregnancy-group">
+                <label>Are you currently pregnant or breastfeeding?</label> <small>(If applicable)</small>
+                <label><input type="radio" name="is_pregnant_breastfeeding" value="yes" {% if data.get('is_pregnant_breastfeeding') == 'yes' or data.get('is_pregnant_breastfeeding') == 1 %}checked{% endif %}> Yes</label>
+                <label><input type="radio" name="is_pregnant_breastfeeding" value="no" {% if data.get('is_pregnant_breastfeeding') == 'no' or data.get('is_pregnant_breastfeeding') == 0 %}checked{% endif %}> No</label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Medical History (Optional but helpful)</legend>
+            <div class="form-group">
+                <label for="medical_conditions">Existing medical conditions (e.g., diabetes, heart conditions, past surgeries)</label>
+                <textarea id="medical_conditions" name="medical_conditions" rows="3">{{ data.get('medical_conditions', '') }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="medications">Current medications (including over-the-counter)</label>
+                <textarea id="medications" name="medications" rows="3">{{ data.get('medications', '') }}</textarea>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">Register Donor</button>
+            <button type="reset" class="btn secondary">Reset Form</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{# Optional: Add JS for conditional display if needed #}
+{# <script>
+    // Basic example: Show/hide travel details
+    const travelRadio = document.querySelectorAll('input[name="travelled_recently"]');
+    const travelDetailsGroup = document.getElementById('travel-details-group');
+
+    function toggleTravelDetails() {
+        if (document.querySelector('input[name="travelled_recently"]:checked')?.value === 'yes') {
+            travelDetailsGroup.style.display = 'block'; // Or remove a 'hidden' class
+        } else {
+            travelDetailsGroup.style.display = 'none'; // Or add a 'hidden' class
+        }
+    }
+    travelRadio.forEach(radio => radio.addEventListener('change', toggleTravelDetails));
+    // Initial check on page load
+    toggleTravelDetails();
+
+    // Add similar logic for illness details and maybe pregnancy based on gender selection
+</script> #}
+{% endblock %}

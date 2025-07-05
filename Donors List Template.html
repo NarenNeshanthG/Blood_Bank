@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Blood Donation System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Blood Donation Eligibility System</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
+                    <li><a href="{{ url_for('register_donor') }}" class="{{ 'active' if request.endpoint == 'register_donor' else '' }}">Register Donor</a></li>
+                    <li><a href="{{ url_for('list_donors') }}" class="{{ 'active' if request.endpoint == 'list_donors' else '' }}">View Donors</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer>
+            <p>© {{ now.year if now else 2024 }} Blood Donation Eligibility System</p> {# Pass 'now' from Flask if needed #}
+        </footer>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Blood Donation Eligibility System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon"> {# Optional: Add a favicon #}
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <h1>Blood Donation Eligibility System</h1>
+        <nav>
+            <ul>
+                {# Use request.endpoint to highlight the active page #}
+                <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
+                <li><a href="{{ url_for('register_donor') }}" class="{{ 'active' if request.endpoint == 'register_donor' else '' }}">Register Donor</a></li>
+                <li><a href="{{ url_for('list_donors') }}" class="{{ 'active' if request.endpoint == 'list_donors' else '' }}">View Donors</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}
+            {# Page specific content goes here #}
+            {% endblock %}
+        </main>
+    </div> {# End .container #}
+
+    <footer>
+        <p>© {{ now.year if now else datetime.utcnow().year }} Blood Donation Eligibility System. All rights reserved.</p>
+    </footer>
+
+    {% block scripts %}
+    {# Add page-specific JavaScript files here if needed #}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Donors List - Blood Donation System{% endblock %}
+
+{% block content %}
+<section class="donors-section">
+    <h2>Registered Donors</h2>
+
+    {% if donors %}
+    <div class="donors-table-container">
+        <table class="donors-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Blood Type</th>
+                    <th>Weight (kg)</th>
+                    <th>Hgb (g/dL)</th>
+                    <th>Alcohol</th>
+                    <th>Last Donated</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {# donors is a list of Row objects from SQLite #}
+                {% for donor in donors %}
+                <tr>
+                    <td>{{ donor['id'] }}</td>
+                    <td>{{ donor['name'] }}</td>
+                    <td>{{ donor['age'] }}</td>
+                    <td>{{ donor['gender'] | replace('M', 'Male') | replace('F', 'Female') | replace('O', 'Other') }}</td> {# More readable gender #}
+                    <td>{{ donor['blood_type'] }}</td>
+                    <td>{{ donor['weight'] | default('N/A') }}</td>
+                    <td>{{ donor['hemoglobin_level'] | default('N/A') }}</td>
+                    <td>{{ donor['alcoholic_status'] | default('N/A') }}</td>
+                    <td>{{ donor['last_donated'] | default('Never') }}</td>
+                    <td>{{ donor['registration_date'] | default('N/A') }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('check_eligibility', donor_id=donor['id']) }}" class="btn small primary" title="Check Eligibility Prediction">Check AI Eligibility</a>
+                        {# Add Edit/Delete later if needed #}
+                        {# <a href="{{ url_for('edit_donor', donor_id=donor['id']) }}" class="btn small secondary">Edit</a> #}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>No donors have been registered in the system yet.</p>
+        <a href="{{ url_for('register_donor') }}" class="btn primary">Be the First to Register a Donor</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

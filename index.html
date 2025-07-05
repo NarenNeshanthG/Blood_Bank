@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Blood Donation System{% endblock %}
+
+{% block content %}
+<section class="welcome">
+    <h2>Welcome to the Advanced Blood Donation Eligibility System</h2>
+    <p>Helping manage blood donors and predict donation eligibility using AI-driven insights.</p>
+    <p>Your contribution can save lives. Register today or view our list of potential donors.</p>
+
+    <div class="actions">
+        <a href="{{ url_for('register_donor') }}" class="btn primary large">Register as a New Donor</a>
+        <a href="{{ url_for('list_donors') }}" class="btn secondary large">View Registered Donors</a>
+    </div>
+</section>
+
+<section class="info">
+    <h3>Why Donate Blood?</h3>
+    <p>Blood donation is a critical service supporting surgeries, cancer treatments, chronic illnesses, and traumatic injuries. A single donation can help save up to three lives.</p>
+
+    <h3>Basic Eligibility Guidelines</h3>
+    <p>While our AI provides a specific prediction, general requirements include:</p>
+    <ul>
+        <li>Age: Typically 18-65 years old.</li>
+        <li>Weight: Minimum 50 kg (110 lbs).</li>
+        <li>Health: Good general health, feeling well on the day of donation.</li>
+        <li>Hemoglobin: Minimum levels apply (checked before donation).</li>
+        <li>Donation Interval: Usually 56 days (8 weeks) since last whole blood donation.</li>
+        <li>Risk Factors: No recent high-risk behaviors, travel to certain areas, specific medical conditions, or certain medications.</li>
+    </ul>
+    <p><em>Note: Our registration form asks detailed questions used by the prediction model. Always be honest about your health history.</em></p>
+</section>
+{% endblock %}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blood Donor List</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-red-600">Blood Donors List</h1>
+        
+        <!-- Optional Filter Form -->
+        <form action="{{ url_for('filter_donors') }}" method="get" class="mb-6 bg-white p-4 rounded shadow">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <select name="blood_type" class="p-2 border rounded">
+                    <option value="">All Blood Types</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
+                
+                <input type="number" name="min_age" placeholder="Min Age" class="p-2 border rounded">
+                <input type="number" name="max_age" placeholder="Max Age" class="p-2 border rounded">
+                
+                <select name="gender" class="p-2 border rounded">
+                    <option value="">All Genders</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <button type="submit" class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Apply Filters
+            </button>
+        </form>
+
+        <!-- Donors Table -->
+        <div class="bg-white shadow rounded">
+            <table class="w-full">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="p-3 text-left">Name</th>
+                        <th class="p-3 text-left">Age</th>
+                        <th class="p-3 text-left">Gender</th>
+                        <th class="p-3 text-left">Blood Type</th>
+                        <th class="p-3 text-left">Eligibility</th>
+                        <th class="p-3 text-left">Contact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for donor in donors %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3">{{ donor.name }}</td>
+                        <td class="p-3">{{ donor.age }}</td>
+                        <td class="p-3">{{ donor.gender }}</td>
+                        <td class="p-3">{{ donor.blood_type }}</td>
+                        <td class="p-3">
+                            <span class="{{ 'text-green-600' if donor.is_eligible == 'Eligible' else 'text-red-600' }}">
+                                {{ donor.is_eligible }}
+                            </span>
+                        </td>
+                        <td class="p-3">{{ donor.contact_number }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
